@@ -47,6 +47,7 @@ namespace HomeWork2
             Console.WriteLine($"Количество цветов в букете = {bouqetQuantity}");
 
             Console.ReadKey();
+
         }
     }
 }
