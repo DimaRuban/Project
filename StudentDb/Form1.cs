@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
-using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace StudentDb
@@ -25,22 +18,20 @@ namespace StudentDb
             GetStudentsRecord();
         }
 
-        private void GetStudentsRecord()
+        public int StudentId { get; set; }
+
+        //jod_with_datagrid
+        private void StudentGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            
-            using (SqlConnection connection = new SqlConnection(conectionString))
-            {
-                connection.Open();
-                string selectQuery = "select * from [StudentDb]";
-                SqlCommand sqlCommand = new SqlCommand(selectQuery, connection);
-                DataTable dataTable = new DataTable();
-                SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
-                dataTable.Load(sqlDataReader);
-                StudentGridView1.DataSource = dataTable;
-                connection.Close();
-            }
+            StudentId = Convert.ToInt32(StudentGridView1.SelectedRows[0].Cells[0].Value);
+            FirstName.Text = StudentGridView1.SelectedRows[0].Cells[1].Value.ToString();
+            LastName.Text = StudentGridView1.SelectedRows[0].Cells[2].Value.ToString();
+            Group.Text = StudentGridView1.SelectedRows[0].Cells[3].Value.ToString();
+            Address.Text = StudentGridView1.SelectedRows[0].Cells[4].Value.ToString();
+            PhoneNumber.Text = StudentGridView1.SelectedRows[0].Cells[5].Value.ToString();
         }
 
+        //Metod_insert
         private void button1_Click(object sender, EventArgs e)
         {
             if (isValid())
@@ -50,7 +41,7 @@ namespace StudentDb
                     connection.Open();
                     string insertQuery = "insert into [StudentDb] values (@FirstName, @LastName, @Group, @Addres, @PhoneNumber)";
                     SqlCommand sqlCommand = new SqlCommand(insertQuery,connection);
-                    
+
                     sqlCommand.Parameters.AddWithValue("@FirstName", FirstName.Text);
                     sqlCommand.Parameters.AddWithValue("@LastName", LastName.Text);
                     sqlCommand.Parameters.AddWithValue("@Group", Group.Text);
@@ -62,18 +53,74 @@ namespace StudentDb
                     connection.Close();
 
                     MessageBox.Show("New student is successfully saved", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                   
+                    GetStudentsRecord();
+                    ResetForm();
                 }
             } 
         }
 
-        private bool isValid()
+        //Metod_update
+        private void button2_Click(object sender, EventArgs e)
         {
-            if (FirstName.Text == string.Empty)
+            using (SqlConnection connection = new SqlConnection(conectionString))
             {
-                MessageBox.Show("First name is required", "Fail", MessageBoxButtons.OK, MessageBoxIcon.Error);
-               return false;
+                if (StudentId>0)
+                {
+                    connection.Open();
+                    string updateQuery = "update  [StudentDb] set FirstName = @FirstName, LastName = @LastName, [Group] = @Group, Addres = @Addres, PhoneNumber = @PhoneNumber where Id = @Id";
+                    SqlCommand sqlCommand = new SqlCommand(updateQuery, connection);
+
+
+                    sqlCommand.Parameters.AddWithValue("@FirstName", FirstName.Text);
+                    sqlCommand.Parameters.AddWithValue("@LastName", LastName.Text);
+                    sqlCommand.Parameters.AddWithValue("@Group", Group.Text);
+                    sqlCommand.Parameters.AddWithValue("@Addres", Address.Text);
+                    sqlCommand.Parameters.AddWithValue("@PhoneNumber", PhoneNumber.Text);
+                    sqlCommand.Parameters.AddWithValue("@Id", this.StudentId);
+
+                    sqlCommand.ExecuteNonQuery();
+
+                    connection.Close();
+
+                    MessageBox.Show("Student information is successfully update", "Update", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    GetStudentsRecord();
+                    ResetForm();
+                }
+                else
+                {
+                    MessageBox.Show("Please, choose student", "Eror", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            return true;
+        }
+        // Metod_delete
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection connection = new SqlConnection(conectionString))
+            {
+                if (StudentId > 0)
+                {
+                    connection.Open();
+                    string deleteQuery = "delete from [StudentDb] where Id = @Id";
+                    SqlCommand sqlCommand = new SqlCommand(deleteQuery, connection);
+
+                    sqlCommand.Parameters.AddWithValue("@Id", this.StudentId);
+
+                    sqlCommand.ExecuteNonQuery();
+
+                    connection.Close();
+
+                    MessageBox.Show("Student information is successfully delete", "Delete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    GetStudentsRecord();
+                    ResetForm();
+                }
+                else
+                {
+                    MessageBox.Show("Please, choose student", "Eror", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
